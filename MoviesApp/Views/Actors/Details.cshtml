@@ -1,0 +1,83 @@
+﻿@model MoviesApp.ViewModels.ActorViewModel
+
+@{
+	ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+	<h4>Actor</h4>
+	<hr />
+	<dl class="row">
+		<dt class="col-sm-2">
+			<label asp-for="FirstName"></label>
+		</dt>
+		<dd class="col-sm-10">
+			@Model.FirstName
+		</dd>
+		<dt class="col-sm-2">
+			<label asp-for="LastName"></label>
+		</dt>
+		<dd class="col-sm-10">
+			@Model.LastName
+		</dd>
+		<dt class="col-sm-2">
+			<label asp-for="Age"></label>
+		</dt>
+		<dd class="col-sm-10">
+			@Model.Age
+		</dd>
+		<dt class="col-sm-2">
+			<label asp-for="Birthday"></label>
+		</dt>
+		<dd class="col-sm-10">
+			@Model.Birthday.ToString("dd.MM.yyyy")
+		</dd>
+		<dt class="col-sm-2">
+			<label asp-for="Town"></label>
+		</dt>
+		<dd class="col-sm-10">
+			@Model.Town
+		</dd>
+	</dl>
+	<hr />
+	<h3>Movies</h3>
+	@if (Model.Movies.Count() != 0)
+	{
+<div class="card-group">
+	@foreach (var item in Model.Movies)
+	{
+		<form method="post" asp-controller="Actors" asp-action="Details" asp-route-movieId="@item.MovieId">
+			<div class="card" style="width: 18rem;">
+				<div class="card-body">
+					<h5 class="card-title">@item.Movie.Title</h5>
+					<p class="card-text">Genre: @item.Movie.Genre</p>
+					<p class="card-text">Release Date: @item.Movie.ReleaseDate.ToString("dd.MM.yyyy")</p>
+					<input type="hidden" class="form-control" value="@Model.Id" asp-for="@Model.Id" />
+					<a class="btn btn-primary" asp-controller="Movies" asp-route-id="@item.MovieId" asp-action="Details">Details</a>
+					<input class="btn btn-danger" type="submit" value="Detach" asp-action="Details" asp-controller="Actors" asp-route-id="@Model.Id" asp-route-movieId="@item.MovieId" />
+				</div>
+			</div>
+		</form>
+	}
+</div>
+	}
+	else
+	{
+		<h6 class="card-title">Films with the participation of @Model.FirstName @Model.LastName was not found.</h6>
+	}
+	<hr />
+	<div class="card text-center">
+		<div class="card-body">
+			<h5 class="card-title">Added film</h5>
+			<p class="card-text">If you want to add a new movie, click the button</p>
+			<a class="btn btn-primary" asp-controller="MoviesActors" asp-action="AddMovie" asp-route-id="@Model.Id">Create now</a>
+		</div>
+	</div>
+	<hr />
+</div>
+<div>
+	<a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+	<a class="btn btn-primary" asp-action="Index">Back to List</a>
+</div>

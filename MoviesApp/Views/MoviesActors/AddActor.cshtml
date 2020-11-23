@@ -1,0 +1,41 @@
+﻿@model IEnumerable<MoviesApp.Models.Actor>
+
+@{
+	ViewData["Title"] = "Add Actor";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<h4>Actors:</h4>
+@if (Model.Count() != 0)
+{
+	<div class="card-group">
+		@foreach (var item in Model)
+		{
+			<form method="post" asp-action="AddActor" asp-route-actorId="@item.Id">
+				<div class="card" style="width: 18rem;">
+					<div class="card-body">
+						<h5 class="card-title">@item.FirstName @item.LastName</h5>
+						<p class="card-text">Age: @item.Age </p>
+						<p class="card-text">Birthday: @item.Birthday.ToString("dd.MM.yyyy")</p>
+						<p class="card-text"> Town: @item.Town </p>
+						<input type="hidden" class="form-control" value="@item.Id" asp-for="@item.Id" />
+						<input class="btn btn-primary" type="submit" value="Add" asp-route-actorId="@item.Id" />
+					</div>
+				</div>
+			</form>
+		}
+	</div>
+}
+else
+{
+	<h6 class="card-title">No available actors found.</h6>
+}
+<hr />
+<div>
+	<a class="btn btn-primary" asp-controller="Movies" asp-action="Index">Back</a>
+</div>
+
+@section Scripts {
+	@{Html.RenderPartial("_ValidationScriptsPartial");}
+}
