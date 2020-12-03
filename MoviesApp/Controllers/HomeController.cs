@@ -19,6 +19,12 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		public IActionResult Error()
+		{
+			return View();
+		}
+
+		[HttpGet]
 		public IActionResult Privacy()
 		{
 			return View();

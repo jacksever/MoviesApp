@@ -4,7 +4,7 @@
 	ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>@ViewData["Title"]</h1>
 
 <div>
 	<h4>Actor</h4>
@@ -45,23 +45,23 @@
 	<h3>Movies</h3>
 	@if (Model.Movies.Count() != 0)
 	{
-<div class="card-group">
-	@foreach (var item in Model.Movies)
-	{
-		<form method="post" asp-controller="Actors" asp-action="Details" asp-route-movieId="@item.MovieId">
-			<div class="card" style="width: 18rem;">
-				<div class="card-body">
-					<h5 class="card-title">@item.Movie.Title</h5>
-					<p class="card-text">Genre: @item.Movie.Genre</p>
-					<p class="card-text">Release Date: @item.Movie.ReleaseDate.ToString("dd.MM.yyyy")</p>
-					<input type="hidden" class="form-control" value="@Model.Id" asp-for="@Model.Id" />
-					<a class="btn btn-primary" asp-controller="Movies" asp-route-id="@item.MovieId" asp-action="Details">Details</a>
-					<input class="btn btn-danger" type="submit" value="Detach" asp-action="Details" asp-controller="Actors" asp-route-id="@Model.Id" asp-route-movieId="@item.MovieId" />
-				</div>
-			</div>
-		</form>
-	}
-</div>
+		<div class="card-group">
+			@foreach (var item in Model.Movies)
+			{
+				<form method="post" asp-controller="Actors" asp-action="Details" asp-route-movieId="@item.MovieId">
+					<div class="card" style="width: 18rem;">
+						<div class="card-body">
+							<h5 class="card-title">@item.Movie.Title</h5>
+							<p class="card-text">Genre: @item.Movie.Genre</p>
+							<p class="card-text">Release Date: @item.Movie.ReleaseDate.ToString("dd.MM.yyyy")</p>
+							<input type="hidden" class="form-control" value="@Model.Id" asp-for="@Model.Id" />
+							<a class="btn btn-primary" asp-controller="Movies" asp-route-id="@item.MovieId" asp-action="Details">Details</a>
+							<input class="btn btn-danger" type="submit" value="Detach" asp-action="Details" asp-controller="Actors" asp-route-id="@Model.Id" asp-route-movieId="@item.MovieId" />
+						</div>
+					</div>
+				</form>
+			}
+		</div>
 	}
 	else
 	{
