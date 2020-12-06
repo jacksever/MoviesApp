@@ -6,6 +6,6 @@ namespace MoviesApp.ViewModels
 	public class ActorViewModel : CreateActorViewModel
 	{
 		public int Id { get; set; }
-		public virtual ICollection<MoviesActors> Movies { get; set; }
+		public virtual ICollection<MoviesActors> MoviesActors { get; set; }
 	}
 }

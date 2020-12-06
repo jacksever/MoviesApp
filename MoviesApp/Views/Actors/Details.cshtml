@@ -43,10 +43,10 @@
 	</dl>
 	<hr />
 	<h3>Movies</h3>
-	@if (Model.Movies.Count() != 0)
+	@if (Model.MoviesActors.Count() != 0)
 	{
 		<div class="card-group">
-			@foreach (var item in Model.Movies)
+			@foreach (var item in Model.MoviesActors)
 			{
 				<form method="post" asp-controller="Actors" asp-action="Details" asp-route-movieId="@item.MovieId">
 					<div class="card" style="width: 18rem;">

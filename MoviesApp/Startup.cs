@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoviesApp.Data;
 using MoviesApp.Middleware;
+using AutoMapper;
 
 namespace MoviesApp
 {
@@ -29,6 +30,11 @@ namespace MoviesApp
 
 			services.AddDbContext<MoviesContext>(options =>
 				options.UseSqlServer(Configuration.GetConnectionString("MoviesContext")));
+
+			services.AddControllers().AddNewtonsoftJson(options =>
+				options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+			services.AddAutoMapper(typeof(Startup));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

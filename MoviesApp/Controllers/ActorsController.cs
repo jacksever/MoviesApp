@@ -33,7 +33,7 @@ namespace MoviesApp.Controllers
 					Age = actor.Age,
 					Birthday = actor.Birthday,
 					Town = actor.Town,
-					Movies = actor.MoviesActors
+					MoviesActors = actor.MoviesActors
 				}).ToList());
 		}
 
@@ -85,7 +85,7 @@ namespace MoviesApp.Controllers
 					Age = actor.Age,
 					Birthday = actor.Birthday,
 					Town = actor.Town,
-					Movies = actor.MoviesActors
+					MoviesActors = actor.MoviesActors
 				}).FirstOrDefault();
 
 
@@ -116,7 +116,7 @@ namespace MoviesApp.Controllers
 					Age = m.Age,
 					Birthday = m.Birthday,
 					Town = m.Town,
-					Movies = m.MoviesActors
+					MoviesActors = m.MoviesActors
 
 				}).FirstOrDefault();
 

@@ -24,9 +24,7 @@ namespace MoviesApp.Controllers
 		public IActionResult AddActor(int? id)
 		{
 			if (id == null)
-			{
 				return NotFound();
-			}
 
 			var actors = _context.Actors.ToList();
 
@@ -39,6 +37,9 @@ namespace MoviesApp.Controllers
 					Actors = m.MoviesActors
 
 				}).FirstOrDefault();
+
+			if (movies == null)
+				return NotFound();
 
 			var listed = actors.Select(a => a.Id).ToList().Except(movies.Actors.Select(a => a.ActorId).ToList());
 
@@ -79,9 +80,7 @@ namespace MoviesApp.Controllers
 		public IActionResult AddMovie(int? id)
 		{
 			if (id == null)
-			{
 				return NotFound();
-			}
 
 			var actors = _context.Movies.ToList();
 
@@ -91,10 +90,13 @@ namespace MoviesApp.Controllers
 					.ThenInclude(mm => mm.Movie)
 				.Select(m => new ActorViewModel
 				{
-					Movies = m.MoviesActors
+					MoviesActors = m.MoviesActors
 				}).FirstOrDefault();
 
-			var listed = actors.Select(a => a.Id).ToList().Except(movies.Movies.Select(a => a.MovieId).ToList());
+			if (movies == null)
+				return NotFound();
+
+			var listed = actors.Select(a => a.Id).ToList().Except(movies.MoviesActors.Select(a => a.MovieId).ToList());
 
 			var movieList = _context.Movies
 				.Where(a => listed.Contains(a.Id))
