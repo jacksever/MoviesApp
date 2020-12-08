@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using MoviesApp.Data;
 using MoviesApp.Middleware;
 using AutoMapper;
+using MoviesApp.Services;
 
 namespace MoviesApp
 {
@@ -33,6 +34,9 @@ namespace MoviesApp
 
 			services.AddControllers().AddNewtonsoftJson(options =>
 				options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+			services.AddScoped<IActorService, ActorService>();
+			services.AddScoped<IActorWithMovieService, ActorWithMovieService>();
 
 			services.AddAutoMapper(typeof(Startup));
 		}

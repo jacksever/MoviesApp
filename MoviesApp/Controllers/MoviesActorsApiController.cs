@@ -1,12 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MoviesApp.Data;
-using MoviesApp.Models;
-using MoviesApp.ViewModels;
-using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using MoviesApp.Services;
+using MoviesApp.Services.Dto;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MoviesApp.Controllers
 {
@@ -14,39 +9,22 @@ namespace MoviesApp.Controllers
 	[Route("api/moviesActors")]
 	public class MoviesActorsApiController : ControllerBase
 	{
-		private readonly MoviesContext _context;
-		private readonly IMapper _mapper;
+		private readonly IActorWithMovieService _service;
 
-		public MoviesActorsApiController(MoviesContext context, IMapper mapper)
+		public MoviesActorsApiController(IActorWithMovieService service)
 		{
-			_context = context;
-			_mapper = mapper;
+			_service = service;
 		}
 
 		[HttpGet("addActor/{id}")]
-		[ProducesResponseType(200, Type = typeof(IEnumerable<ApiUpdateActorViewModel>))]
+		[ProducesResponseType(200, Type = typeof(IEnumerable<ActorDto>))]
 		[ProducesResponseType(404)]
-		public ActionResult<IEnumerable<ApiUpdateActorViewModel>> AddActor(int? id)
+		public ActionResult<IEnumerable<ActorDto>> AddActor(int? id)
 		{
 			if (id == null)
 				return BadRequest();
 
-			var actors = _mapper.Map<IEnumerable<Actor>, IEnumerable<ApiActorViewModel>>(_context.Actors.ToList());
-
-			var movies = _mapper.Map<Movie, ApiMovieWithActorViewModel>(_context.Movies
-				.Where(m => m.Id == id)
-				.Include(m => m.MoviesActors)
-					.ThenInclude(mm => mm.Actor)
-				.FirstOrDefault());
-
-			if (movies == null)
-				return NotFound();
-
-			var listed = actors.Select(a => a.Id).ToList().Except(movies.Actors.Select(a => a.ActorId).ToList());
-
-			var actorList = _mapper.Map<IEnumerable<Actor>, IEnumerable<ApiUpdateActorViewModel>>(_context.Actors
-				.Where(a => listed.Contains(a.Id))
-				.ToList());
+			var actorList = _service.AddActor((int)id);
 
 			if (actorList == null)
 				return NotFound();
@@ -58,58 +36,23 @@ namespace MoviesApp.Controllers
 		[HttpPost("addActor/{movieId}/{actorId}")]
 		public IActionResult AddActor(int movieId, int actorId)
 		{
-			var actorMovies = _context.MoviesActors
-				.Where(m => m.ActorId == actorId && m.MovieId == movieId)
-				.FirstOrDefault();
+			var result = _service.Attach(actorId, movieId);
 
-			if (actorMovies == null)
-			{
-				try
-				{
-					var movieActors = new MoviesActors
-					{
-						ActorId = actorId,
-						MovieId = movieId
-					};
-
-					_context.Update(movieActors);
-					_context.SaveChanges();
-				}
-				catch (DbUpdateException)
-				{
-					throw;
-				}
-			}
-			else
+			if (!result)
 				return BadRequest("The selected movie already has this actor!");
 
 			return Ok("The actor was successfully added to this movie :)");
 		}
 
 		[HttpGet("addMovie/{id}")]
-		[ProducesResponseType(200, Type = typeof(IEnumerable<ApiMovieByIdViewModel>))]
+		[ProducesResponseType(200, Type = typeof(IEnumerable<MovieDto>))]
 		[ProducesResponseType(404)]
-		public ActionResult<ApiMovieByIdViewModel> AddMovie(int? id)
+		public ActionResult<MovieDto> AddMovie(int? id)
 		{
 			if (id == null)
 				return NotFound();
 
-			var movies = _mapper.Map<IEnumerable<Movie>, IEnumerable<ApiMovieByIdViewModel>>(_context.Movies.ToList());
-
-			var actors = _mapper.Map<Actor, ApiActorWithMovieViewModel>(_context.Actors
-				.Where(a => a.Id == id)
-				.Include(a => a.MoviesActors)
-					.ThenInclude(aa => aa.Movie)
-				.FirstOrDefault());
-
-			if (actors == null)
-				return NotFound();
-
-			var listed = movies.Select(a => a.Id).ToList().Except(actors.Movies.Select(a => a.MovieId).ToList());
-
-			var movieList = _mapper.Map<IEnumerable<Movie>, IEnumerable<ApiMovieByIdViewModel>>(_context.Movies
-				.Where(a => listed.Contains(a.Id))
-				.ToList());
+			var movieList = _service.AddMovie((int)id);
 
 			if (movieList == null)
 				return NotFound();
@@ -120,29 +63,9 @@ namespace MoviesApp.Controllers
 		[HttpPost("addMovie/{actorId}/{movieId}")]
 		public IActionResult AddMovie(int actorId, int movieId)
 		{
-			var actorMovies = _context.MoviesActors
-				.Where(m => m.ActorId == actorId && m.MovieId == movieId)
-				.FirstOrDefault();
+			var result = _service.Attach(actorId, movieId);
 
-			if (actorMovies == null)
-			{
-				try
-				{
-					var movieActors = new MoviesActors
-					{
-						ActorId = actorId,
-						MovieId = movieId
-					};
-
-					_context.Update(movieActors);
-					_context.SaveChanges();
-				}
-				catch (DbUpdateException)
-				{
-					throw;
-				}
-			}
-			else
+			if (!result)
 				return BadRequest("The selected actor already has this movie!");
 
 			return Ok("This movie is successfully attached to this actor");
@@ -152,16 +75,10 @@ namespace MoviesApp.Controllers
 		[HttpDelete("detach/{actorId}/{movieId}")]
 		public IActionResult Detach(int actorId, int movieId)
 		{
-			var content = _context.MoviesActors
-				.Where(m => m.ActorId == actorId)
-				.Where(a => a.MovieId == movieId)
-				.FirstOrDefault();
+			var result = _service.Detach(actorId, movieId);
 
-			if (content == null)
+			if (!result)
 				return BadRequest("The actor or the film is not attached or not found!");
-
-			_context.MoviesActors.Remove(content);
-			_context.SaveChanges();
 
 			return Ok("Actor and movie successfully detached from each other :)");
 		}

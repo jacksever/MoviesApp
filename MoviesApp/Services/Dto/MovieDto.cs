@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoviesApp.ViewModels
+namespace MoviesApp.Services.Dto
 {
-	public class InputMovieViewModel
+	public class MovieDto
 	{
 		public int? Id { get; set; }
 

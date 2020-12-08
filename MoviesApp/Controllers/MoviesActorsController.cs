@@ -1,77 +1,39 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using MoviesApp.Data;
-using MoviesApp.Models;
-using MoviesApp.ViewModels;
-using System;
-using System.Linq;
+using MoviesApp.Services;
 
 namespace MoviesApp.Controllers
 {
 	public class MoviesActorsController : Controller
 	{
-		private readonly MoviesContext _context;
-		private readonly ILogger<MoviesActorsController> _logger;
+		private readonly IActorWithMovieService _service;
 
-		public MoviesActorsController(MoviesContext context, ILogger<MoviesActorsController> logger)
+		public MoviesActorsController(IActorWithMovieService service)
 		{
-			_context = context;
-			_logger = logger;
+			_service = service;
 		}
 
 		[HttpGet]
 		public IActionResult AddActor(int? id)
 		{
 			if (id == null)
+				return BadRequest();
+
+			var list = _service.AddActor((int)id);
+
+			if (list == null)
 				return NotFound();
 
-			var actors = _context.Actors.ToList();
-
-			var movies = _context.Movies
-				.Where(m => m.Id == id)
-				.Include(m => m.MoviesActors)
-					.ThenInclude(mm => mm.Actor)
-				.Select(m => new MovieViewModel
-				{
-					Actors = m.MoviesActors
-
-				}).FirstOrDefault();
-
-			if (movies == null)
-				return NotFound();
-
-			var listed = actors.Select(a => a.Id).ToList().Except(movies.Actors.Select(a => a.ActorId).ToList());
-
-			var actorList = _context.Actors
-				.Where(a => listed.Contains(a.Id))
-				.ToList();
-
-			if (actorList == null)
-				return NotFound();
-
-			return View(actorList);
+			return View(list);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public IActionResult AddActor(int id, int actorId)
 		{
-			try
-			{
-				var movieActors = new MoviesActors
-				{
-					ActorId = actorId,
-					MovieId = id
-				};
+			var result = _service.Attach(actorId, id);
 
-				_context.Update(movieActors);
-				_context.SaveChanges();
-			}
-			catch (DbUpdateException)
-			{
-				throw;
-			}
+			if (!result)
+				return BadRequest();
 
 			return RedirectToAction(nameof(AddActor));
 		}
@@ -80,53 +42,24 @@ namespace MoviesApp.Controllers
 		public IActionResult AddMovie(int? id)
 		{
 			if (id == null)
+				return BadRequest();
+
+			var list = _service.AddMovie((int)id);
+
+			if (list == null)
 				return NotFound();
 
-			var actors = _context.Movies.ToList();
-
-			var movies = _context.Actors
-				.Where(m => m.Id == id)
-				.Include(m => m.MoviesActors)
-					.ThenInclude(mm => mm.Movie)
-				.Select(m => new ActorViewModel
-				{
-					MoviesActors = m.MoviesActors
-				}).FirstOrDefault();
-
-			if (movies == null)
-				return NotFound();
-
-			var listed = actors.Select(a => a.Id).ToList().Except(movies.MoviesActors.Select(a => a.MovieId).ToList());
-
-			var movieList = _context.Movies
-				.Where(a => listed.Contains(a.Id))
-				.ToList();
-
-			if (movieList == null)
-				return NotFound();
-
-			return View(movieList);
+			return View(list);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public IActionResult AddMovie(int id, int movieId)
 		{
-			try
-			{
-				var movieActors = new MoviesActors
-				{
-					ActorId = id,
-					MovieId = movieId
-				};
+			var result = _service.Attach(id, movieId);
 
-				_context.Update(movieActors);
-				_context.SaveChanges();
-			}
-			catch (DbUpdateException)
-			{
-				throw;
-			}
+			if (!result)
+				return BadRequest();
 
 			return RedirectToAction(nameof(AddMovie));
 		}

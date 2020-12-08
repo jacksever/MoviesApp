@@ -1,40 +1,30 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using MoviesApp.Data;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using MoviesApp.Filters;
-using MoviesApp.Models;
+using MoviesApp.Services;
+using MoviesApp.Services.Dto;
 using MoviesApp.ViewModels;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace MoviesApp.Controllers
 {
 	public class ActorsController : Controller
 	{
-		private readonly MoviesContext _context;
-		private readonly ILogger<ActorsController> _logger;
+		private readonly IActorService _service;
+		private readonly IActorWithMovieService _serviceWithMovie;
+		private readonly IMapper _mapper;
 
-		public ActorsController(MoviesContext context, ILogger<ActorsController> logger)
+		public ActorsController(IActorService service, IActorWithMovieService serviceWithMovie, IMapper mapper)
 		{
-			_context = context;
-			_logger = logger;
+			_service = service;
+			_serviceWithMovie = serviceWithMovie;
+			_mapper = mapper;
 		}
 
 		[HttpGet]
 		public IActionResult Index()
 		{
-			return View(_context.Actors
-				.Include(actor => actor.MoviesActors)
-				.Select(actor => new ActorViewModel
-				{
-					Id = actor.Id,
-					FirstName = actor.FirstName,
-					LastName = actor.LastName,
-					Age = actor.Age,
-					Birthday = actor.Birthday,
-					Town = actor.Town,
-					MoviesActors = actor.MoviesActors
-				}).ToList());
+			return View(_mapper.Map<IEnumerable<ActorDto>, IEnumerable<ActorViewModel>>(_service.GetAllActor()));
 		}
 
 		[HttpGet]
@@ -50,15 +40,7 @@ namespace MoviesApp.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				_context.Add(new Actor
-				{
-					FirstName = inputModel.FirstName,
-					LastName = inputModel.LastName,
-					Age = inputModel.Age,
-					Birthday = inputModel.Birthday,
-					Town = inputModel.Town
-				});
-				_context.SaveChanges();
+				_service.AddActor(_mapper.Map<ActorDto>(inputModel));
 
 				return RedirectToAction(nameof(Index));
 			}
@@ -73,20 +55,7 @@ namespace MoviesApp.Controllers
 				return NotFound();
 			}
 
-			var viewModel = _context.Actors
-				.Where(actor => actor.Id == id)
-				.Include(actor => actor.MoviesActors)
-					.ThenInclude(m => m.Movie)
-				.Select(actor => new ActorViewModel
-				{
-					Id = actor.Id,
-					FirstName = actor.FirstName,
-					LastName = actor.LastName,
-					Age = actor.Age,
-					Birthday = actor.Birthday,
-					Town = actor.Town,
-					MoviesActors = actor.MoviesActors
-				}).FirstOrDefault();
+			var viewModel = _mapper.Map<ActorViewModel>(_service.GetActor((int)id));
 
 
 			if (viewModel == null)
@@ -105,20 +74,7 @@ namespace MoviesApp.Controllers
 				return NotFound();
 			}
 
-			var editModel = _context.Actors
-				.Include(m => m.MoviesActors)
-					.ThenInclude(mm => mm.Movie)
-				.Where(m => m.Id == id)
-				.Select(m => new EditActorViewModel
-				{
-					FirstName = m.FirstName,
-					LastName = m.LastName,
-					Age = m.Age,
-					Birthday = m.Birthday,
-					Town = m.Town,
-					MoviesActors = m.MoviesActors
-
-				}).FirstOrDefault();
+			var editModel = _mapper.Map<EditActorViewModel>(_service.GetActor((int)id));
 
 			if (editModel == null)
 			{
@@ -135,32 +91,13 @@ namespace MoviesApp.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				try
-				{
-					var actor = new Actor
-					{
-						Id = id,
-						FirstName = editModel.FirstName,
-						LastName = editModel.LastName,
-						Age = editModel.Age,
-						Birthday = editModel.Birthday,
-						Town = editModel.Town
-					};
+				var actor = _mapper.Map<ActorDto>(editModel);
+				actor.Id = id;
 
-					_context.Update(actor);
-					_context.SaveChanges();
-				}
-				catch (DbUpdateException)
-				{
-					if (!ActorExists(id))
-					{
-						return NotFound();
-					}
-					else
-					{
-						throw;
-					}
-				}
+				var result = _service.UpdateActor(actor);
+
+				if (result == null)
+					return NotFound();
 
 				return RedirectToAction(nameof(Index));
 			}
@@ -176,14 +113,7 @@ namespace MoviesApp.Controllers
 				return NotFound();
 			}
 
-			var deleteModel = _context.Actors.Where(m => m.Id == id).Select(m => new DeleteActorViewModel
-			{
-				FirstName = m.FirstName,
-				LastName = m.LastName,
-				Age = m.Age,
-				Birthday = m.Birthday,
-				Town = m.Town
-			}).FirstOrDefault();
+			var deleteModel = _mapper.Map<DeleteActorViewModel>(_service.GetActor((int)id));
 
 			if (deleteModel == null)
 			{
@@ -197,10 +127,11 @@ namespace MoviesApp.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult DeleteConfirmed(int id)
 		{
-			var actor = _context.Actors.Find(id);
-			_context.Actors.Remove(actor);
-			_context.SaveChanges();
-			_logger.LogError($"Movie with id {actor.Id} has been deleted!");
+			var actor = _service.DeleteActor(id);
+
+			if (actor == null)
+				return NotFound();
+
 			return RedirectToAction(nameof(Index));
 		}
 
@@ -208,20 +139,12 @@ namespace MoviesApp.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult Detach(int id, int movieId)
 		{
-			var movie = _context.MoviesActors
-				.Where(m => m.ActorId == id)
-				.Where(a => a.MovieId == movieId)
-				.FirstOrDefault();
+			var result = _serviceWithMovie.Detach(id, movieId);
 
-			_context.MoviesActors.Remove(movie);
-			_context.SaveChanges();
+			if (!result)
+				return BadRequest();
 
 			return RedirectToAction(nameof(Details));
-		}
-
-		private bool ActorExists(int id)
-		{
-			return _context.Actors.Any(e => e.Id == id);
 		}
 	}
 }
