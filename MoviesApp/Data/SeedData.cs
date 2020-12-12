@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MoviesApp.Models;
@@ -14,10 +15,9 @@ namespace MoviesApp.Data
 				serviceProvider.GetRequiredService<
 					DbContextOptions<MoviesContext>>()))
 			{
-				// Look for any movies.
 				if (context.Movies.Any())
 				{
-					return;   // DB has been seeded
+					return;
 				}
 
 				context.Movies.AddRange(
@@ -56,6 +56,28 @@ namespace MoviesApp.Data
 				);
 
 				context.SaveChanges();
+			}
+
+			var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+			var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+
+			if (!roleManager.RoleExistsAsync("Admin").Result)
+				roleManager.CreateAsync(new IdentityRole { Name = "Admin" }).Wait();
+
+			if (userManager.FindByEmailAsync("js@test.com").Result == null)
+			{
+				var user = new ApplicationUser
+				{
+					FirstName = "Root",
+					LastName = "Admin",
+					UserName = "js@test.com",
+					Email = "js@test.com",
+				};
+
+				IdentityResult result = userManager.CreateAsync(user, "qwerty").Result;
+
+				if (result.Succeeded)
+					userManager.AddToRoleAsync(user, "Admin").Wait();
 			}
 		}
 	}

@@ -11,6 +11,8 @@ using MoviesApp.Data;
 using MoviesApp.Middleware;
 using AutoMapper;
 using MoviesApp.Services;
+using MoviesApp.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace MoviesApp
 {
@@ -31,6 +33,13 @@ namespace MoviesApp
 
 			services.AddDbContext<MoviesContext>(options =>
 				options.UseSqlServer(Configuration.GetConnectionString("MoviesContext")));
+
+			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+			{
+				options.Password.RequireNonAlphanumeric = false;
+			})
+				.AddEntityFrameworkStores<MoviesContext>()
+				.AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider);
 
 			services.AddControllers().AddNewtonsoftJson(options =>
 				options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -55,6 +64,7 @@ namespace MoviesApp
 
 			app.UseRouting();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoviesApp.Filters;
 using MoviesApp.Services;
@@ -22,12 +23,14 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult Index()
 		{
 			return View(_mapper.Map<IEnumerable<ActorDto>, IEnumerable<ActorViewModel>>(_service.GetAllActor()));
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Create()
 		{
 			return View();
@@ -36,6 +39,7 @@ namespace MoviesApp.Controllers
 		[HttpPost]
 		[CheckAgeActorsFilter]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Create([Bind("FirstName,LastName,Age,Birthday,Town")] CreateActorViewModel inputModel)
 		{
 			if (ModelState.IsValid)
@@ -48,6 +52,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult Details(int? id)
 		{
 			if (id == null)
@@ -67,6 +72,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Edit(int? id)
 		{
 			if (id == null)
@@ -87,6 +93,7 @@ namespace MoviesApp.Controllers
 		[HttpPost]
 		[CheckAgeActorsFilter]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Edit(int id, [Bind("FirstName,LastName,Age,Birthday,Town")] EditActorViewModel editModel)
 		{
 			if (ModelState.IsValid)
@@ -106,6 +113,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Delete(int? id)
 		{
 			if (id == null)
@@ -124,6 +132,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpPost, ActionName("Delete")]
+		[Authorize(Roles = "Admin")]
 		[ValidateAntiForgeryToken]
 		public IActionResult DeleteConfirmed(int id)
 		{
@@ -136,6 +145,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpPost, ActionName("Details")]
+		[Authorize(Roles = "Admin")]
 		[ValidateAntiForgeryToken]
 		public IActionResult Detach(int id, int movieId)
 		{

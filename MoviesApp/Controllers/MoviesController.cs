@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult Index()
 		{
 			return View(_context.Movies
@@ -36,6 +38,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult Details(int? id)
 		{
 			if (id == null)
@@ -67,6 +70,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Create()
 		{
 			return View();
@@ -74,6 +78,7 @@ namespace MoviesApp.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Create([Bind("Title,ReleaseDate,Genre,Price")] InputMovieViewModel inputModel)
 		{
 			if (ModelState.IsValid)
@@ -93,6 +98,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Edit(int? id)
 		{
 			if (id == null)
@@ -117,6 +123,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin")]
 		[ValidateAntiForgeryToken]
 		public IActionResult Edit(int id, [Bind("Title,ReleaseDate,Genre,Price")] EditMovieViewModel editModel)
 		{
@@ -153,6 +160,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Delete(int? id)
 		{
 			if (id == null)
@@ -178,6 +186,7 @@ namespace MoviesApp.Controllers
 
 		[HttpPost, ActionName("Delete")]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult DeleteConfirmed(int id)
 		{
 			var movie = _context.Movies.Find(id);
@@ -189,6 +198,7 @@ namespace MoviesApp.Controllers
 
 		[HttpPost, ActionName("Details")]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult Detach(int id, int actorId)
 		{
 			var movie = _context.MoviesActors

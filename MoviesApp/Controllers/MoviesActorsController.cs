@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MoviesApp.Services;
 
 namespace MoviesApp.Controllers
@@ -13,6 +14,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult AddActor(int? id)
 		{
 			if (id == null)
@@ -28,6 +30,7 @@ namespace MoviesApp.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult AddActor(int id, int actorId)
 		{
 			var result = _service.Attach(actorId, id);
@@ -39,6 +42,7 @@ namespace MoviesApp.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult AddMovie(int? id)
 		{
 			if (id == null)
@@ -54,6 +58,7 @@ namespace MoviesApp.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")]
 		public IActionResult AddMovie(int id, int movieId)
 		{
 			var result = _service.Attach(id, movieId);

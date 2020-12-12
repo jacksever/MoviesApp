@@ -51,7 +51,11 @@
 							<p class="card-text">Town: @item.Actor.Town</p>
 							<input type="hidden" class="form-control" value="@Model.Id" asp-for="@Model.Id" />
 							<a class="btn btn-primary" asp-controller="Actors" asp-route-id="@item.ActorId" asp-action="Details">Details</a>
-							<input class="btn btn-danger" type="submit" value="Detach" asp-action="Details" asp-controller="Movies" asp-route-id="@Model.Id" asp-route-actorId="@item.ActorId" />
+							@if (User.IsInRole("Admin"))
+							{
+								<input class="btn btn-danger" type="submit" value="Detach" asp-action="Details" asp-controller="Movies" asp-route-id="@Model.Id" asp-route-actorId="@item.ActorId" />
+							}
+
 						</div>
 					</div>
 				</form>
@@ -63,16 +67,22 @@
 		<h6 class="card-title">In the movie @Model.Title no actors were cast.</h6>
 	}
 	<hr />
-	<div class="card text-center">
-		<div class="card-body">
-			<h5 class="card-title">Added actors</h5>
-			<p class="card-text">If you want to add a new actor, click the button</p>
-			<a class="btn btn-primary" asp-controller="MoviesActors" asp-action="AddActor" asp-route-id="@Model.Id">Create now</a>
+	@if (User.IsInRole("Admin"))
+	{
+		<div class="card text-center">
+			<div class="card-body">
+				<h5 class="card-title">Added actors</h5>
+				<p class="card-text">If you want to add a new actor, click the button</p>
+				<a class="btn btn-primary" asp-controller="MoviesActors" asp-action="AddActor" asp-route-id="@Model.Id">Create now</a>
+			</div>
 		</div>
-	</div>
-	<hr />
+		<hr />
+	}
 </div>
 <div>
-	<a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+	@if (User.IsInRole("Admin"))
+	{
+		<a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+	}
 	<a class="btn btn-primary" asp-action="Index">Back to List</a>
 </div>
